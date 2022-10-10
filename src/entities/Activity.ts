@@ -5,16 +5,15 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { User } from "./User";
-import { Updoot } from "./Updoot";
+import { IsInt, Max, Min } from "class-validator";
 
 @ObjectType()
 @Entity()
-export class Post extends BaseEntity {
+export class Activity extends BaseEntity {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id!: number;
@@ -27,29 +26,40 @@ export class Post extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field(() => String)
-  @Column()
-  title!: string;
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  date: Date;
 
   @Field(() => String)
   @Column()
-  text!: string;
+  project!: string;
 
+  @Field(() => String)
+  @Column()
+  category!: string;
+
+  @Field(() => String)
+  @Column()
+  ticket!: string;
+
+  @Field(() => String)
+  @Column()
+  comment!: string;
+
+  @IsInt()
+  @Min(0)
+  @Max(8)
   @Field(() => Int)
   @Column({ type: "int", default: 0 })
-  points!: string;
-
-  @Field(() => Int, { nullable: true })
-  voteStatus: number | null; // 1 or -1 or null
+  hours!: number;
 
   @Field(() => String)
   @Column()
   creatorId: number;
 
   @Field()
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.activities, {
+    onDelete: "CASCADE",
+  })
   creator: User;
-
-  @OneToMany(() => Updoot, (updoot) => updoot.post)
-  updoots: Updoot[];
 }

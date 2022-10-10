@@ -9,5 +9,8 @@ export class UsernamePasswordInput {
   username: string;
 
   @Field()
+  fullName: string;
+
+  @Field()
   password: string;
 }

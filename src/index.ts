@@ -3,7 +3,7 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
-import { PostResolver } from "./resolvers/post";
+import { ActivityResolver } from "./resolvers/activity";
 import { UserResolver } from "./resolvers/user";
 import Redis from "ioredis";
 import session from "express-session";
@@ -12,9 +12,8 @@ import { __prod__, COOKIE_NAME } from "./constants";
 import { MyContext } from "./types";
 import { myDataSource } from "./app-data-source";
 import { createUserLoader } from "./utils/createUserLoader";
-import { createUpdootLoader } from "./utils/createUpdootLoader";
 import "dotenv-safe/config";
-import cors from "cors";
+// import cors from "cors";
 
 const main = async () => {
   // establish database connection
@@ -30,18 +29,19 @@ const main = async () => {
 
   const app = express();
 
-  app.set("trust proxy", !__prod__);
-  app.set("Access-Control-Allow-Origin", process.env.CORS_ORIGIN);
-  app.set("Access-Control-Allow-Origin", process.env.CORS_ORIGIN);
-  app.set("Access-Control-Allow-Credentials", true);
+  // app.set("trust proxy", !__prod__);
+  // app.set("Access-Control-Allow-Origin", process.env.CORS_ORIGIN);
+  // app.set("Access-Control-Allow-Credentials", true);
   !__prod__ && app.set("trust proxy", 1);
 
+  /*
   app.use(
     cors({
       origin: ["https://studio.apollographql.com", process.env.CORS_ORIGIN],
       credentials: true,
     })
   );
+*/
   // redis@v4
   const RedisStore = connectRedis(session);
   const redisClient = new Redis(process.env.REDIS_URL);
@@ -54,8 +54,9 @@ const main = async () => {
         maxAge: 1000 * 60 * 24 * 365 * 1, //1 year
         httpOnly: true,
         sameSite: __prod__ ? "none" : "lax",
-        secure: __prod__, //https only when in production
+        secure: __prod__,
         domain: __prod__ ? ".jce-projects.com" : undefined,
+        path: "/",
       },
       name: COOKIE_NAME,
       secret: process.env.SESSION_SECRET as string,
@@ -69,7 +70,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, PostResolver, UserResolver],
+      resolvers: [HelloResolver, ActivityResolver, UserResolver],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({
@@ -77,7 +78,6 @@ const main = async () => {
       res,
       redisClient,
       userLoader: createUserLoader(),
-      updootLoader: createUpdootLoader(),
     }),
   });
   await apolloServer.start();

@@ -8,8 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Post } from "./Post";
-import { Updoot } from "./Updoot";
+import { Activity } from "./Activity";
 
 @ObjectType()
 @Entity()
@@ -34,12 +33,13 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   username!: string;
 
+  @Field(() => String)
+  @Column()
+  fullName!: string;
+
   @Column()
   password!: string;
 
-  @OneToMany(() => Post, (post) => post.creator)
-  posts: Post[];
-
-  @OneToMany(() => Updoot, (updoot) => updoot.user)
-  updoots: Updoot[];
+  @OneToMany(() => Activity, (activity) => activity.creator)
+  activities: Activity[];
 }

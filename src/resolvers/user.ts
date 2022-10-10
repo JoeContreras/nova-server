@@ -147,6 +147,7 @@ export class UserResolver {
       user = await User.create({
         username: options.username,
         email: options.email,
+        fullName: options.fullName,
         password: hashedPassword,
       }).save();
       //Store userId session
