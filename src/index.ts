@@ -54,7 +54,7 @@ const main = async () => {
         maxAge: 1000 * 60 * 24 * 365 * 1, //1 year
         httpOnly: true,
         sameSite: __prod__ ? "none" : "lax",
-        secure: __prod__,
+        secure: __prod__ ? true : false,
         domain: __prod__ ? ".jce-projects.com" : undefined,
         path: "/",
       },

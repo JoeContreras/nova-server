@@ -26,9 +26,13 @@ export class Activity extends BaseEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
-  date: Date;
+  @Field(() => String)
+  @Column()
+  start!: Date;
+
+  @Field(() => String)
+  @Column()
+  end!: Date;
 
   @Field(() => String)
   @Column()
@@ -44,7 +48,7 @@ export class Activity extends BaseEntity {
 
   @Field(() => String)
   @Column()
-  comment!: string;
+  title!: string;
 
   @IsInt()
   @Min(0)
