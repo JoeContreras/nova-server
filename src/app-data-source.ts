@@ -12,7 +12,7 @@ export const myDataSource = new DataSource({
   entities: [Activity, User],
   logging: true,
   synchronize: true,
-  ssl: __prod__,
+  ssl: true,
   extra: __prod__ && {
     ssl: {
       rejectUnauthorized: false,

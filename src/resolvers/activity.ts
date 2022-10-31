@@ -6,7 +6,6 @@ import {
   InputType,
   Int,
   Mutation,
-  ObjectType,
   Query,
   Resolver,
   Root,
@@ -30,15 +29,19 @@ class ActivityInput {
   ticket: string;
 
   @Field()
-  comment: string;
+  title: string;
 
   @Field()
   hours: number;
 
-  @Field({ nullable: true })
-  date: string;
+  @Field()
+  start: Date;
+
+  @Field()
+  end: Date;
 }
 
+/*
 @ObjectType()
 class PaginatedPosts {
   @Field(() => [Activity])
@@ -47,6 +50,7 @@ class PaginatedPosts {
   @Field()
   hasMore: boolean;
 }
+*/
 
 @Resolver(Activity)
 export class ActivityResolver {
@@ -64,35 +68,13 @@ export class ActivityResolver {
     return root.text.slice(0, 50);
   }
 */
-  @Query(() => PaginatedPosts)
-  async activities(
-    @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
-  ): Promise<PaginatedPosts> {
-    const realLimit = Math.min(50, limit);
-    const realLimitPlusOne = Math.min(50, limit) + 1;
-    const replacements: any[] = [realLimitPlusOne];
+  @Query(() => [Activity])
+  async activities(@Ctx() { req }: MyContext): Promise<Activity[]> {
+    const activities = await Activity.find({
+      where: { creatorId: req.session.userId },
+    });
 
-    if (cursor) {
-      replacements.push(new Date(parseInt(cursor)));
-    }
-
-    const posts = await myDataSource.query(
-      `
-    select p.*
-     from post p
-    ${cursor ? `where p."createdAt" < $2` : ""}
-    and p."creatorId" = ${req.session.userId}
-    order by p."createdAt" DESC
-    limit $1
-    `,
-      replacements
-    );
-    return {
-      posts: posts.slice(0, realLimit),
-      hasMore: posts.length === realLimitPlusOne,
-    };
+    return activities;
   }
 
   @Query(() => Activity, { nullable: true })
@@ -106,7 +88,10 @@ export class ActivityResolver {
     @Arg("input") input: ActivityInput,
     @Ctx() { req }: MyContext
   ): Promise<Activity> {
-    return Activity.create({ ...input, creatorId: req.session.userId }).save();
+    return Activity.create({
+      ...input,
+      creatorId: req.session.userId,
+    }).save();
   }
 
   @Mutation(() => Activity, { nullable: true })
@@ -117,13 +102,15 @@ export class ActivityResolver {
     @Arg("category", () => String, { nullable: true }) category: string,
     @Arg("hours", () => Int, { nullable: true }) hours: number,
     @Arg("ticket", () => String, { nullable: true }) ticket: string,
-    @Arg("comment", () => String, { nullable: true }) comment: string,
+    @Arg("title", () => String, { nullable: true }) title: string,
+    @Arg("start", () => Date, { nullable: true }) start: Date,
+    @Arg("end", () => Date, { nullable: true }) end: Date,
     @Ctx() { req }: MyContext
   ): Promise<Activity | null> {
     const result = await myDataSource
       .createQueryBuilder()
       .update(Activity)
-      .set({ project, category, hours, ticket, comment })
+      .set({ project, category, hours, ticket, title, start, end })
       .where('id = :id and "creatorId" = :creatorId', {
         id,
         creatorId: req.session.userId,
